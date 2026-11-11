@@ -31,10 +31,10 @@ Core exports a KnowledgeGraph class with methods like scanFolder(), getBacklinks
 - [x] 2. Create core parser module to read .md files, extract frontmatter, headings, and [[wiki links]] without modifying them.
 - [x] 3. Implement backlink index builder that maps targets to source files and headings; verify with vitest run parser.test.ts.
 - [x] 4. Add full-text search module using flexsearch with case-insensitive matching and highlight extraction; verify with vitest run search.test.ts.
-- [ ] 5. Build graph data generator that converts parsed nodes/edges into vis-network compatible format; verify with vitest run graph.test.ts.
-- [ ] 6. Scaffold static web UI with HTML/CSS/JS for search bar, results list, backlink panel, and graph canvas.
-- [ ] 7. Integrate UI with core via a lightweight HTTP server, exposing /api/search, /api/graph, /api/backlinks endpoints; verify with node server.js && curl localhost:3000/health.
-- [ ] 8. Add daily notes feature: template system, date-based file creation/read, and quick capture UI; verify with node server.js && open http://localhost:3000/daily.
+- [x] 5. Build graph data generator that converts parsed nodes/edges into vis-network compatible format; verify with vitest run graph.test.ts.
+- [x] 6. Scaffold static web UI with HTML/CSS/JS for search bar, results list, backlink panel, and graph canvas.
+- [x] 7. Integrate UI with core via a lightweight HTTP server, exposing /api/search, /api/graph, /api/backlinks endpoints; verify with node server.js && curl localhost:3000/health.
+- [x] 8. Add daily notes feature: template system, date-based file creation/read, and quick capture UI; verify with node server.js && open http://localhost:3000/daily.
 - [ ] 9. Write integration tests for end-to-end workflow; verify with vitest run integration.test.ts.
 - [ ] 10. Refactor core into @sentryvault/core package with clean public API and strict TypeScript types.
 - [ ] 11. Build @sentryvault/web package bundling UI and server; verify offline functionality with npm run build && node server.js.

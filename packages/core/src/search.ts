@@ -121,7 +121,8 @@ export class SearchEngine {
     >();
 
     for (const filePath of matchedFiles) {
-      const content = this.fileContents.get(filePath) ?? '';
+      const fileKey = String(filePath);
+      const content = this.fileContents.get(fileKey) ?? '';
 
       const fileHighlights: SearchHighlight[] = [];
       let fileScore = 0;
@@ -135,7 +136,7 @@ export class SearchEngine {
       }
 
       // Also boost score if the title matches
-      const title = this.fileTitles.get(filePath);
+      const title = this.fileTitles.get(String(filePath));
       if (title) {
         for (const term of terms) {
           if (title.toLowerCase().includes(term)) {
@@ -154,7 +155,7 @@ export class SearchEngine {
         fileHighlights.push(...highlights);
       }
 
-      resultMap.set(filePath, { score: fileScore, highlights: fileHighlights });
+      resultMap.set(String(filePath), { score: fileScore, highlights: fileHighlights });
     }
 
     // Convert to array, filter by minScore, sort by score descending

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentryVault</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>SentryVault</h1>
+      <div id="search-bar">
+        <input type="text" id="search-input" placeholder="Search notes...">
+        <button id="search-btn">Search</button>
+      </div>
+      <nav id="nav">
+        <button class="nav-btn active" data-view="search">Search</button>
+        <button class="nav-btn" data-view="graph">Graph</button>
+        <button class="nav-btn" data-view="daily">Daily</button>
+      </nav>
+    </header>
+
+    <main>
+      <!-- Search View -->
+      <section id="search-view" class="view active">
+        <div id="search-results"></div>
+      </section>
+
+      <!-- Graph View -->
+      <section id="graph-view" class="view">
+        <div id="graph-container"></div>
+      </section>
+
+      <!-- Daily Notes View -->
+      <section id="daily-view" class="view">
+        <div id="daily-controls">
+          <input type="date" id="daily-date">
+          <button id="create-daily-btn">Create Note</button>
+        </div>
+        <div id="daily-content"></div>
+      </section>
+    </main>
+
+    <aside id="backlink-panel">
+      <h3>Backlinks</h3>
+      <div id="backlinks-list"></div>
+    </aside>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

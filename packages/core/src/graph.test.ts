@@ -312,11 +312,11 @@ See [[B]] and [[C]].
 
     const result = generateGraphData(files);
 
-    // A.md, B.md, C.md, A heading = 4 nodes
-    expect(result.nodes).toHaveLength(4);
+    // A.md, B.md, C.md, A heading, B heading, C heading = 6 nodes
+    expect(result.nodes).toHaveLength(6);
 
-    // A->A heading, A->B, A->C = 3 edges
-    expect(result.edges).toHaveLength(3);
+    // A->A heading, A->B, A->C, B->B heading, C->C heading = 5 edges
+    expect(result.edges).toHaveLength(5);
   });
 
   it('should produce vis-network compatible node structure', () => {
@@ -421,8 +421,8 @@ Content.
     // A.md, B.md, A heading, B heading, B#section heading = 5 nodes
     expect(result.nodes).toHaveLength(5);
 
-    // A->A heading, B->B heading, B->B#section, A->B#section = 4 edges
-    expect(result.edges).toHaveLength(4);
+    // A->A heading, B->B heading, B->B#section, A->B, A->B#section = 5 edges
+    expect(result.edges).toHaveLength(5);
   });
 
   it('should set correct node sizes for different types', () => {

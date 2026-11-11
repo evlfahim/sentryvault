@@ -1,0 +1,283 @@
+/* SentryVault - Main Styles */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Header */
+header {
+  background: #16213e;
+  padding: 12px 20px;
+  border-bottom: 1px solid #0f3460;
+}
+
+header h1 {
+  font-size: 1.4rem;
+  color: #e94560;
+  margin-bottom: 10px;
+}
+
+#search-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+#search-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  background: #0f3460;
+  color: #e0e0e0;
+  font-size: 0.95rem;
+}
+
+#search-input::placeholder {
+  color: #888;
+}
+
+#search-btn {
+  padding: 8px 16px;
+  background: #e94560;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+#search-btn:hover {
+  background: #c73652;
+}
+
+#nav {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-btn {
+  padding: 6px 14px;
+  background: #0f3460;
+  color: #e0e0e0;
+  border: 1px solid #1a4a7a;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.nav-btn:hover {
+  background: #1a4a7a;
+}
+
+.nav-btn.active {
+  background: #e94560;
+  border-color: #e94560;
+}
+
+/* Main Content */
+main {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.view {
+  display: none;
+  height: 100%;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.view.active {
+  display: block;
+}
+
+/* Search Results */
+#search-results {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.search-result {
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.search-result:hover {
+  border-color: #e94560;
+}
+
+.search-result h3 {
+  color: #e94560;
+  margin-bottom: 6px;
+  font-size: 1.1rem;
+}
+
+.search-result .file-path {
+  color: #888;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+.search-result .snippet {
+  color: #ccc;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.search-result .highlight {
+  background: #e94560;
+  color: white;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.no-results {
+  text-align: center;
+  color: #888;
+  padding: 40px;
+}
+
+/* Graph View */
+#graph-container {
+  width: 100%;
+  height: 100%;
+  background: #16213e;
+  border-radius: 6px;
+  border: 1px solid #0f3460;
+}
+
+/* Daily Notes */
+#daily-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+#daily-date {
+  padding: 8px 12px;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  background: #0f3460;
+  color: #e0e0e0;
+  font-size: 0.95rem;
+}
+
+#create-daily-btn {
+  padding: 8px 16px;
+  background: #50c878;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+#create-daily-btn:hover {
+  background: #40a868;
+}
+
+#daily-content {
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  padding: 20px;
+  min-height: 300px;
+}
+
+#daily-content h2 {
+  color: #e94560;
+  margin-bottom: 16px;
+}
+
+#daily-content .content {
+  color: #ccc;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* Backlink Panel */
+#backlink-panel {
+  width: 300px;
+  background: #16213e;
+  border-left: 1px solid #0f3460;
+  padding: 16px;
+  overflow-y: auto;
+  display: none;
+}
+
+#backlink-panel.visible {
+  display: block;
+}
+
+#backlink-panel h3 {
+  color: #e94560;
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+.backlink-item {
+  padding: 8px;
+  background: #0f3460;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.backlink-item:hover {
+  background: #1a4a7a;
+}
+
+.backlink-item .source {
+  color: #e0e0e0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.backlink-item .heading {
+  color: #888;
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #16213e;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0f3460;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1a4a7a;
+}

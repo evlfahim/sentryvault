@@ -4,6 +4,8 @@
  */
 
 import { SearchEngine } from './search.js';
+import type { ParsedFile } from './parser.js';
+import { parseMarkdown } from './parser.js';
 
 export {
   Frontmatter,
@@ -76,7 +78,7 @@ export class KnowledgeGraph {
    * Scan a folder of .md files and parse them without modifying them.
    */
   async scanFolder(folderPath: string): Promise<ParsedFile[]> {
-    const { readdir, readFile, stat } = await import('fs/promises');
+    const { readdir, readFile } = await import('fs/promises');
     const { join } = await import('path');
 
     const files: ParsedFile[] = [];
