@@ -28,7 +28,7 @@ async function buildPlugin() {
     target: 'es2022',
     sourcemap: 'inline',
     logLevel: 'info',
-    external: ['obsidian'], // Obsidian types are provided by the host
+    external: ['obsidian', 'fs', 'fs/promises', 'path'], // Node.js built-ins; bridge overrides fs usage
     alias: {
       '@sentryvault/core': join(ROOT, 'packages/core/src/index.ts'),
     },

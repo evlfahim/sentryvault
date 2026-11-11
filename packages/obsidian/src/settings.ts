@@ -5,7 +5,7 @@
  * Provides configuration options for the plugin.
  */
 
-import { App, Plugin, Setting, SettingTab, ButtonComponent } from 'obsidian';
+import { App, Plugin, Setting, SettingTab } from 'obsidian';
 import { type PluginBridge } from '@sentryvault/core';
 import type SentryVaultPlugin from './main.js';
 
@@ -24,7 +24,7 @@ const DEFAULT_SETTINGS: SentryVaultSettings = {
 };
 
 export class SentryVaultSettingsTab extends SettingTab {
-  private plugin: SentryVaultPlugin;
+  plugin: SentryVaultPlugin;
   private settings: SentryVaultSettings;
 
   constructor(app: App, plugin: SentryVaultPlugin) {
@@ -97,25 +97,29 @@ export class SentryVaultSettingsTab extends SettingTab {
     new Setting(containerEl)
       .setName('Refresh Index')
       .setDesc('Manually refresh the knowledge graph index.')
-      .addButton((button: ButtonComponent) =>
-        button.setButtonText('Refresh').onClick(async () => {
+      .addButton((button) => {
+        button.setButtonText('Refresh');
+        button.setCta();
+        button.onClick(async () => {
           button.setButtonText('Refreshing...');
           button.setDisabled(true);
           await this.plugin.refreshIndex();
           button.setButtonText('Refresh');
           button.setDisabled(false);
-        }),
-      );
+        });
+      });
 
     // Create Daily Note Button
     new Setting(containerEl)
       .setName('Create Daily Note for Today')
       .setDesc('Create a daily note for the current date.')
-      .addButton((button: ButtonComponent) =>
-        button.setButtonText('Create Today').onClick(async () => {
+      .addButton((button) => {
+        button.setButtonText('Create Today');
+        button.setCta();
+        button.onClick(async () => {
           await this.plugin.createDailyNoteForToday();
-        }),
-      );
+        });
+      });
 
     // About section
     containerEl.createEl('hr');

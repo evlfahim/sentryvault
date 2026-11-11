@@ -6,7 +6,18 @@
  * and sets up all views, commands, and settings.
  */
 
-import { App, MarkdownView, Notice, Plugin, TFile, TFolder, TAbstractFile, WorkspaceLeaf, Modal } from 'obsidian';
+import {
+  App,
+  MarkdownView,
+  Notice,
+  Plugin,
+  TFile,
+  TFolder,
+  TAbstractFile,
+  WorkspaceLeaf,
+  Modal,
+  EventRef,
+} from 'obsidian';
 import {
   KnowledgeGraph,
   createBridge,
@@ -48,7 +59,8 @@ async function createFolderRecursive(app: App, path: string): Promise<void> {
  * This is the adapter layer between @sentryvault/core and Obsidian.
  */
 function createObsidianBridge(app: App): PluginBridge {
-  const vaultRoot = app.vault.basePath;
+  // Use the adapter's basePath which is the actual file-system root
+  const vaultRoot = app.vault.adapter.basePath;
 
   // ── File System Bridge ──
   const fs: FileSystemBridge = {
@@ -135,7 +147,7 @@ function createObsidianBridge(app: App): PluginBridge {
 
     getAllMarkdownFiles: async (): Promise<string[]> => {
       return app.vault
-        .getAllFiles()
+        .getFiles()
         .filter((f: TFile) => f.path.endsWith('.md'))
         .map((f: TFile) => f.path);
     },
@@ -148,7 +160,7 @@ function createObsidianBridge(app: App): PluginBridge {
       if (file && file instanceof TFile) {
         const leaf = app.workspace.getLeaf(false);
         if (leaf) {
-          await leaf.openView(file);
+          await leaf.setViewState({ type: 'markdown', state: { file: path, mode: 'source' } });
         }
       }
     },
@@ -211,9 +223,11 @@ function createObsidianBridge(app: App): PluginBridge {
 
   // ── Event Bridge ──
   const events: EventBridge = {
-    on: (event: string, callback: (...args: any[]) => void) => {
-      const disposable = app.workspace.on(event, callback);
-      return () => disposable.off();
+    on: (event: string, callback: (...args: any[]) => void): () => void => {
+      const ref: EventRef = app.workspace.on(event, callback);
+      return () => {
+        app.workspace.off(event, ref);
+      };
     },
 
     emit: (event: string, ...args: any[]): void => {
@@ -252,7 +266,7 @@ export default class SentryVaultPlugin extends Plugin {
 
     // Scan the vault on load
     try {
-      await this.graph.scanFolder(this.app.vault.basePath);
+      await this.graph.scanFolder(this.app.vault.adapter.basePath);
       const fileCount = (this.graph as any)['files']?.size ?? 0;
       console.log(`SentryVault: Scanned ${fileCount} files`);
     } catch (err) {
@@ -305,28 +319,31 @@ export default class SentryVaultPlugin extends Plugin {
   private registerViews(): void {
     if (!this.bridge || !this.graph) return;
 
+    const bridge = this.bridge;
+    const graph = this.graph;
+
     // Search View
     this.registerView(
       SEARCH_VIEW_TYPE,
-      (leaf: WorkspaceLeaf) => new SentryVaultSearchView(leaf, this.bridge, this.graph),
+      (leaf: WorkspaceLeaf) => new SentryVaultSearchView(leaf, bridge, graph),
     );
 
     // Graph View
     this.registerView(
       GRAPH_VIEW_TYPE,
-      (leaf: WorkspaceLeaf) => new SentryVaultGraphView(leaf, this.bridge, this.graph),
+      (leaf: WorkspaceLeaf) => new SentryVaultGraphView(leaf, bridge, graph),
     );
 
     // Backlinks View
     this.registerView(
       BACKLINKS_VIEW_TYPE,
-      (leaf: WorkspaceLeaf) => new SentryVaultBacklinksView(leaf, this.bridge, this.graph),
+      (leaf: WorkspaceLeaf) => new SentryVaultBacklinksView(leaf, bridge, graph),
     );
 
     // Daily Notes View
     this.registerView(
       DAILY_VIEW_TYPE,
-      (leaf: WorkspaceLeaf) => new SentryVaultDailyView(leaf, this.bridge, this.graph),
+      (leaf: WorkspaceLeaf) => new SentryVaultDailyView(leaf, bridge, graph),
     );
   }
 
@@ -418,7 +435,7 @@ export default class SentryVaultPlugin extends Plugin {
     new Notice('SentryVault: Refreshing index...', 2000);
 
     try {
-      await this.graph.scanFolder(this.app.vault.basePath);
+      await this.graph.scanFolder(this.app.vault.adapter.basePath);
       const fileCount = (this.graph as any)['files']?.size ?? 0;
       new Notice(`SentryVault: Index refreshed (${fileCount} files)`, 3000);
     } catch (err) {
@@ -458,7 +475,7 @@ export default class SentryVaultPlugin extends Plugin {
   /**
    * Create a daily note for today.
    */
-  private async createDailyNoteForToday(): Promise<void> {
+  async createDailyNoteForToday(): Promise<void> {
     if (!this.graph) {
       new Notice('SentryVault: Graph not initialized', 3000);
       return;

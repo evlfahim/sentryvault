@@ -45,10 +45,9 @@ export class SentryVaultSearchView extends ItemView {
 
     // Search input
     const inputContainer = containerEl.createDiv({ cls: 'sentryvault-search-input-container' });
-    this.searchInput = inputContainer.createEl('input', {
-      type: 'text',
-      placeholder: 'Search vault...',
-    });
+    this.searchInput = inputContainer.createEl('input') as HTMLInputElement;
+    this.searchInput.type = 'text';
+    this.searchInput.placeholder = 'Search vault...';
     this.searchInput.addClass('sentryvault-search-input');
     this.searchInput.addEventListener('input', () => {
       this.performSearch();

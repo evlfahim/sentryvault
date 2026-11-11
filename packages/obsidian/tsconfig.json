@@ -5,9 +5,10 @@
     "rootDir": "src",
     "baseUrl": ".",
     "paths": {
-      "obsidian": ["./node_modules/obsidian/obsidian.d.ts"]
+      "obsidian": ["../obsidian/node_modules/obsidian/obsidian.d.ts"]
     },
-    "types": ["node"]
+    "types": ["node"],
+    "skipLibCheck": true
   },
   "include": ["src/**/*.ts"],
   "references": [

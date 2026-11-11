@@ -44,10 +44,9 @@ export class SentryVaultBacklinksView extends ItemView {
 
     // Target input
     const inputContainer = containerEl.createDiv({ cls: 'sentryvault-backlinks-input-container' });
-    this.targetInput = inputContainer.createEl('input', {
-      type: 'text',
-      placeholder: 'Enter file name or wiki link target...',
-    });
+    this.targetInput = inputContainer.createEl('input') as HTMLInputElement;
+    this.targetInput.type = 'text';
+    this.targetInput.placeholder = 'Enter file name or wiki link target...';
     this.targetInput.addClass('sentryvault-backlinks-input');
     this.targetInput.addEventListener('input', () => {
       this.performBacklinkSearch();

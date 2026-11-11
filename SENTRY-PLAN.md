@@ -41,5 +41,5 @@ Core exports a KnowledgeGraph class with methods like scanFolder(), getBacklinks
 - [x] 12. Add CLI wrapper (sentryvault serve <folder>) with port config and health check; verify with npx sentryvault serve ./test-vault.
 - [x] 13. Test against sample markdown vault; verify search, backlinks, graph, and daily notes render correctly in browser.
 - [x] 14. Design plugin bridge interface: document how to replace web UI with Obsidian panels and use core methods.
-- [ ] 15. Create Obsidian plugin skeleton (@sentryvault/obsidian) importing core and bridging to Obsidian API; verify compilation with npm run build:plugin.
+- [x] 15. Create Obsidian plugin skeleton (@sentryvault/obsidian) importing core and bridging to Obsidian API; verify compilation with npm run build:plugin.
 - [ ] 16. Write README with setup instructions, architecture diagram, run commands, and Obsidian plugin migration guide; verify with markdownlint README.md.

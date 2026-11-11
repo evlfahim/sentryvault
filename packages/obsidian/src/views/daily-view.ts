@@ -45,9 +45,8 @@ export class SentryVaultDailyView extends ItemView {
 
     // Date input
     const dateContainer = containerEl.createDiv({ cls: 'sentryvault-daily-date-container' });
-    this.dateInput = dateContainer.createEl('input', {
-      type: 'date',
-    });
+    this.dateInput = dateContainer.createEl('input') as HTMLInputElement;
+    this.dateInput.type = 'date';
     this.dateInput.addClass('sentryvault-daily-date');
     const today = new Date().toISOString().split('T')[0];
     this.dateInput.value = today;
@@ -62,9 +61,8 @@ export class SentryVaultDailyView extends ItemView {
     // Template textarea
     const templateContainer = containerEl.createDiv({ cls: 'sentryvault-daily-template-container' });
     templateContainer.createEl('label', { text: 'Template ({{date}} placeholder):' });
-    this.templateInput = templateContainer.createEl('textarea', {
-      placeholder: '---\ntitle: {{date}}\n---\n\n# {{date}}\n',
-    });
+    this.templateInput = templateContainer.createEl('textarea') as HTMLTextAreaElement;
+    this.templateInput.placeholder = '---\ntitle: {{date}}\n---\n\n# {{date}}\n';
     this.templateInput.addClass('sentryvault-daily-template');
     this.templateInput.rows = 4;
     this.templateInput.style.width = '100%';

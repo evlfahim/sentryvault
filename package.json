@@ -10,6 +10,7 @@
     "build": "esbuild packages/core/src/index.ts --bundle --outfile=packages/core/dist/index.js --format=cjs --platform=node",
     "build:web": "node packages/web/build.mjs",
     "build:cli": "node packages/cli/build.mjs",
+    "build:plugin": "node packages/obsidian/build.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "echo 'No linter configured yet'"

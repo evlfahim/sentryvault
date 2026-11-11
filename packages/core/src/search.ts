@@ -4,8 +4,10 @@
  * and highlight extraction.
  */
 
-import { Index } from 'flexsearch';
+import FlexSearch from 'flexsearch';
 import type { SearchOptions, SearchHighlight, SearchResult } from './types.js';
+
+const { Index } = FlexSearch as any;
 
 /**
  * Full-text search engine backed by flexsearch.
