@@ -264,7 +264,7 @@ export class KnowledgeGraph {
     }
 
     const content = template
-      ? template.replace('{{date}}', date)
+      ? template.replaceAll('{{date}}', date)
       : `---\ntitle: ${date}\n---\n\n# ${date}\n`;
 
     return { path, content, date };
