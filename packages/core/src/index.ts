@@ -3,29 +3,17 @@
  * Core knowledge graph engine for SentryVault.
  */
 
-export interface Frontmatter {
-  [key: string]: unknown;
-}
-
-export interface Heading {
-  level: number;
-  text: string;
-  line: number;
-}
-
-export interface WikiLink {
-  target: string;
-  line: number;
-  anchor?: string;
-}
-
-export interface ParsedFile {
-  path: string;
-  content: string;
-  frontmatter: Frontmatter;
-  headings: Heading[];
-  wikiLinks: WikiLink[];
-}
+export {
+  Frontmatter,
+  Heading,
+  WikiLink,
+  ParsedFile,
+  parseYamlValue,
+  extractFrontmatter,
+  extractHeadings,
+  extractWikiLinks,
+  parseMarkdown,
+} from './parser.js';
 
 export interface Backlink {
   source: string;
@@ -70,51 +58,6 @@ export interface DailyNote {
   date: string;
 }
 
-/**
- * Parse a simple YAML value string into a JS value.
- * Handles scalars, inline arrays [a, b], inline objects {a: b}, booleans, numbers.
- */
-function parseYamlValue(value: string): unknown {
-  value = value.trim();
-
-  // Boolean
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  if (value === 'null') return null;
-
-  // Number
-  if (/^-?\d+(\.\d+)?$/.test(value)) return Number(value);
-
-  // Inline array [a, b, c]
-  if (value.startsWith('[') && value.endsWith(']')) {
-    const inner = value.slice(1, -1).trim();
-    if (inner === '') return [];
-    return inner.split(',').map(s => parseYamlValue(s.trim()));
-  }
-
-  // Inline object {a: b, c: d}
-  if (value.startsWith('{') && value.endsWith('}')) {
-    const inner = value.slice(1, -1).trim();
-    if (inner === '') return {};
-    const obj: Record<string, unknown> = {};
-    for (const pair of inner.split(',')) {
-      const [k, ...v] = pair.split(':');
-      if (k !== undefined) {
-        obj[k.trim()] = parseYamlValue(v.join(':').trim());
-      }
-    }
-    return obj;
-  }
-
-  // Quoted string
-  if ((value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))) {
-    return value.slice(1, -1);
-  }
-
-  return value;
-}
-
 export class KnowledgeGraph {
   private files: Map<string, ParsedFile> = new Map();
   private backlinks: Map<string, Backlink[]> = new Map();
@@ -141,7 +84,7 @@ export class KnowledgeGraph {
         files.push(...subFiles);
       } else if (entry.isFile() && entry.name.endsWith('.md')) {
         const content = await readFile(fullPath, 'utf-8');
-        const parsed = this.parseMarkdown(fullPath, content);
+        const parsed = parseMarkdown(fullPath, content);
         files.push(parsed);
         this.files.set(parsed.path, parsed);
       }
@@ -151,80 +94,6 @@ export class KnowledgeGraph {
     this.buildSearchIndex();
 
     return files;
-  }
-
-  /**
-   * Parse a markdown file into structured data.
-   * Does NOT add to internal file map — use addFile() for that.
-   */
-  parseMarkdown(filePath: string, content: string): ParsedFile {
-    const frontmatter: Frontmatter = {};
-    let body = content;
-
-    // Extract YAML frontmatter
-    const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
-    const fmMatch = content.match(frontmatterRegex);
-    if (fmMatch) {
-      body = content.slice(fmMatch[0].length);
-      const fmLines = fmMatch[1].split('\n');
-      for (const line of fmLines) {
-        const kvMatch = line.match(/^(\w[\w-]*):\s*(.*)$/);
-        if (kvMatch) {
-          frontmatter[kvMatch[1]] = parseYamlValue(kvMatch[2]);
-        }
-      }
-    }
-
-    // Extract headings
-    const headings: Heading[] = [];
-    const headingRegex = /^(#{1,6})\s+(.+)$/gm;
-    let headingMatch: RegExpExecArray | null;
-    let lineNum = 0;
-    for (const line of content.split('\n')) {
-      lineNum++;
-      headingMatch = headingRegex.exec(line);
-      if (headingMatch) {
-        headings.push({
-          level: headingMatch[1].length,
-          text: headingMatch[2].trim(),
-          line: lineNum,
-        });
-      }
-    }
-
-    // Extract wiki links [[target]] and [[target#anchor]]
-    const wikiLinks: WikiLink[] = [];
-    const wikiLinkRegex = /\[\[([^\]]+)\]\]/g;
-    let wikiMatch: RegExpExecArray | null;
-    let lineNum2 = 0;
-    for (const line of content.split('\n')) {
-      lineNum2++;
-      wikiLinkRegex.lastIndex = 0;
-      while ((wikiMatch = wikiLinkRegex.exec(line)) !== null) {
-        const target = wikiMatch[1];
-        const hashIdx = target.indexOf('#');
-        if (hashIdx !== -1) {
-          wikiLinks.push({
-            target: target.slice(0, hashIdx),
-            line: lineNum2,
-            anchor: target.slice(hashIdx + 1),
-          });
-        } else {
-          wikiLinks.push({
-            target: target,
-            line: lineNum2,
-          });
-        }
-      }
-    }
-
-    return {
-      path: filePath,
-      content,
-      frontmatter,
-      headings,
-      wikiLinks,
-    };
   }
 
   /**

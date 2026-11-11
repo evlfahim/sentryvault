@@ -28,7 +28,7 @@ Core exports a KnowledgeGraph class with methods like scanFolder(), getBacklinks
 
 ## Steps
 - [x] 1. Initialize TypeScript monorepo with tsconfig, package.json, vitest, and esbuild; verify with npm test.
-- [ ] 2. Create core parser module to read .md files, extract frontmatter, headings, and [[wiki links]] without modifying them.
+- [x] 2. Create core parser module to read .md files, extract frontmatter, headings, and [[wiki links]] without modifying them.
 - [ ] 3. Implement backlink index builder that maps targets to source files and headings; verify with vitest run parser.test.ts.
 - [ ] 4. Add full-text search module using flexsearch with case-insensitive matching and highlight extraction; verify with vitest run search.test.ts.
 - [ ] 5. Build graph data generator that converts parsed nodes/edges into vis-network compatible format; verify with vitest run graph.test.ts.
