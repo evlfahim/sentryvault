@@ -1,0 +1,16 @@
+{
+  "name": "@sentryvault/core",
+  "version": "0.1.0",
+  "description": "Core knowledge graph engine for SentryVault",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "flexsearch": "^0.7.43"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0"
+  }
+}

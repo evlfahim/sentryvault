@@ -1,0 +1,25 @@
+{
+  "name": "sentryvault",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A zero-dependency, offline-first markdown knowledge base",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "esbuild packages/core/src/index.ts --bundle --outfile=packages/core/dist/index.js --format=cjs --platform=node",
+    "build:web": "esbuild packages/web/src/index.ts --bundle --outfile=packages/web/dist/index.js --format=cjs --platform=node",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "echo 'No linter configured yet'"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

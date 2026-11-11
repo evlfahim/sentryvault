@@ -27,7 +27,7 @@ TypeScript, Node.js, flexsearch, vis-network, vanilla HTML/CSS/JS, esbuild, vite
 Core exports a KnowledgeGraph class with methods like scanFolder(), getBacklinks(), search(), getGraphData(), and createDailyNote(). The UI is a separate @sentryvault/web package. To wrap as an Obsidian plugin, import the core, replace the web UI with Obsidian's ItemView/SettingTab, and bridge core methods to Obsidian's file system and editor APIs.
 
 ## Steps
-- [ ] 1. Initialize TypeScript monorepo with tsconfig, package.json, vitest, and esbuild; verify with npm test.
+- [x] 1. Initialize TypeScript monorepo with tsconfig, package.json, vitest, and esbuild; verify with npm test.
 - [ ] 2. Create core parser module to read .md files, extract frontmatter, headings, and [[wiki links]] without modifying them.
 - [ ] 3. Implement backlink index builder that maps targets to source files and headings; verify with vitest run parser.test.ts.
 - [ ] 4. Add full-text search module using flexsearch with case-insensitive matching and highlight extraction; verify with vitest run search.test.ts.
