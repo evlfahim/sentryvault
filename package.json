@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "build": "esbuild packages/core/src/index.ts --bundle --outfile=packages/core/dist/index.js --format=cjs --platform=node",
-    "build:web": "esbuild packages/web/src/index.ts --bundle --outfile=packages/web/dist/index.js --format=cjs --platform=node",
+    "build:web": "node packages/web/build.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "echo 'No linter configured yet'"

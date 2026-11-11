@@ -95,10 +95,10 @@ Anchor content.
     for (const result of searchResults) {
       expect(result).toHaveProperty('file');
       expect(result).toHaveProperty('score');
-      expect(result).toHaveProperty('matches');
-      expect(Array.isArray(result.matches)).toBe(true);
-      for (const match of result.matches) {
-        expect(match).toHaveProperty('text');
+      expect(result).toHaveProperty('highlights');
+      expect(Array.isArray(result.highlights)).toBe(true);
+      for (const match of result.highlights) {
+        expect(match).toHaveProperty('term');
         expect(match).toHaveProperty('snippet');
       }
     }
@@ -385,10 +385,10 @@ Anchor content here.
     for (const result of searchResults) {
       expect(result).toHaveProperty('file');
       expect(result).toHaveProperty('score');
-      expect(result).toHaveProperty('matches');
-      expect(Array.isArray(result.matches)).toBe(true);
-      for (const match of result.matches) {
-        expect(match).toHaveProperty('text');
+      expect(result).toHaveProperty('highlights');
+      expect(Array.isArray(result.highlights)).toBe(true);
+      for (const match of result.highlights) {
+        expect(match).toHaveProperty('term');
         expect(match).toHaveProperty('snippet');
       }
     }
@@ -660,9 +660,9 @@ This is another test note about searching.
 
     // Verify results contain both terms
     for (const result of searchResults) {
-      const hasNote = result.matches.some(m => m.text.includes('note'));
-      const hasTest = result.matches.some(m => m.text.includes('test'));
-      // At least one of the terms should be in the matches
+      const hasNote = result.highlights.some(m => m.term.includes('note'));
+      const hasTest = result.highlights.some(m => m.term.includes('test'));
+      // At least one of the terms should be in the highlights
       expect(hasNote || hasTest).toBe(true);
     }
 

@@ -238,18 +238,9 @@ export class KnowledgeGraph {
    * @returns Array of search results sorted by relevance.
    */
   search(query: string, options?: { limit?: number }): SearchResult[] {
-    const results = this.searchEngine.search(query, {
+    return this.searchEngine.search(query, {
       limit: options?.limit ?? 50,
     });
-
-    return results.map(r => ({
-      file: r.file,
-      score: r.score,
-      matches: r.highlights.map(h => ({
-        text: h.term,
-        snippet: h.snippet,
-      })),
-    }));
   }
 
   /**
