@@ -3,6 +3,8 @@
  * Core knowledge graph engine for SentryVault.
  */
 
+import { SearchEngine } from './search.js';
+
 export {
   Frontmatter,
   Heading,
@@ -14,6 +16,13 @@ export {
   extractWikiLinks,
   parseMarkdown,
 } from './parser.js';
+
+export {
+  SearchEngine,
+  SearchOptions,
+  SearchHighlight,
+  SearchResult as SearchEngineResult,
+} from './search.js';
 
 export interface Backlink {
   source: string;
@@ -61,7 +70,7 @@ export interface DailyNote {
 export class KnowledgeGraph {
   private files: Map<string, ParsedFile> = new Map();
   private backlinks: Map<string, Backlink[]> = new Map();
-  private searchIndex: Map<string, Map<string, number>> = new Map();
+  private searchEngine: SearchEngine = new SearchEngine();
 
   /**
    * Scan a folder of .md files and parse them without modifying them.
@@ -147,66 +156,37 @@ export class KnowledgeGraph {
   }
 
   /**
-   * Build a full-text search index over all file contents.
+   * Build the full-text search index from all parsed files.
    */
   buildSearchIndex(): void {
-    this.searchIndex.clear();
+    this.searchEngine.clear();
 
     for (const [path, file] of this.files) {
-      const words = file.content.toLowerCase().split(/\s+/);
-      const wordSet = new Set(words);
-      for (const word of wordSet) {
-        if (word.length > 1) {
-          if (!this.searchIndex.has(word)) {
-            this.searchIndex.set(word, new Map());
-          }
-          const fileMap = this.searchIndex.get(word)!;
-          fileMap.set(path, (fileMap.get(path) || 0) + 1);
-        }
-      }
+      const title =
+        typeof file.frontmatter.title === 'string'
+          ? file.frontmatter.title
+          : undefined;
+      this.searchEngine.addFile(path, file.content, title);
     }
   }
 
   /**
-   * Search content with case-insensitive matching.
+   * Search content with case-insensitive matching using flexsearch.
+   * Returns results with highlights and snippets.
    */
-  search(query: string): SearchResult[] {
-    const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
-    const results = new Map<string, { score: number; matches: { text: string; snippet: string }[] }>();
+  search(query: string, options?: { limit?: number }): SearchResult[] {
+    const results = this.searchEngine.search(query, {
+      limit: options?.limit ?? 50,
+    });
 
-    for (const term of terms) {
-      const fileScores = this.searchIndex.get(term);
-      if (fileScores) {
-        for (const [path, count] of fileScores) {
-          if (!results.has(path)) {
-            results.set(path, { score: 0, matches: [] });
-          }
-          const result = results.get(path)!;
-          result.score += count;
-          // Extract a snippet around the term
-          const file = this.files.get(path);
-          if (file) {
-            const lines = file.content.split('\n');
-            for (let i = 0; i < lines.length; i++) {
-              const idx = lines[i].toLowerCase().indexOf(term);
-              if (idx !== -1) {
-                const start = Math.max(0, idx - 40);
-                const end = Math.min(lines[i].length, idx + term.length + 40);
-                let snippet = lines[i].slice(start, end);
-                if (start > 0) snippet = '...' + snippet;
-                if (end < lines[i].length) snippet = snippet + '...';
-                result.matches.push({ text: term, snippet });
-                break;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    return Array.from(results.entries())
-      .map(([file, data]) => ({ file, ...data }))
-      .sort((a, b) => b.score - a.score);
+    return results.map(r => ({
+      file: r.file,
+      score: r.score,
+      matches: r.highlights.map(h => ({
+        text: h.term,
+        snippet: h.snippet,
+      })),
+    }));
   }
 
   /**
