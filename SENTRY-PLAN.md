@@ -36,7 +36,7 @@ Core exports a KnowledgeGraph class with methods like scanFolder(), getBacklinks
 - [x] 7. Integrate UI with core via a lightweight HTTP server, exposing /api/search, /api/graph, /api/backlinks endpoints; verify with node server.js && curl localhost:3000/health.
 - [x] 8. Add daily notes feature: template system, date-based file creation/read, and quick capture UI; verify with node server.js && open http://localhost:3000/daily.
 - [x] 9. Write integration tests for end-to-end workflow; verify with vitest run integration.test.ts.
-- [ ] 10. Refactor core into @sentryvault/core package with clean public API and strict TypeScript types.
+- [x] 10. Refactor core into @sentryvault/core package with clean public API and strict TypeScript types.
 - [ ] 11. Build @sentryvault/web package bundling UI and server; verify offline functionality with npm run build && node server.js.
 - [ ] 12. Add CLI wrapper (sentryvault serve <folder>) with port config and health check; verify with npx sentryvault serve ./test-vault.
 - [ ] 13. Test against sample markdown vault; verify search, backlinks, graph, and daily notes render correctly in browser.

@@ -1,36 +1,17 @@
 /**
  * @module @sentryvault/core/parser
- * Markdown file parser — reads .md files, extracts frontmatter, headings,
- * and [[wiki links]] without modifying the source files.
+ * Markdown file parser — reads .md files, extracts frontmatter,
+ * headings, and [[wiki links]] without modifying the source files.
  */
 
-export interface Frontmatter {
-  [key: string]: unknown;
-}
-
-export interface Heading {
-  level: number;
-  text: string;
-  line: number;
-}
-
-export interface WikiLink {
-  target: string;
-  line: number;
-  anchor?: string;
-}
-
-export interface ParsedFile {
-  path: string;
-  content: string;
-  frontmatter: Frontmatter;
-  headings: Heading[];
-  wikiLinks: WikiLink[];
-}
+import type { Frontmatter, Heading, WikiLink, ParsedFile } from './types.js';
 
 /**
  * Parse a simple YAML value string into a JS value.
  * Handles scalars, inline arrays [a, b], inline objects {a: b}, booleans, numbers.
+ *
+ * @param value - The YAML value string to parse.
+ * @returns The parsed JavaScript value.
  */
 export function parseYamlValue(value: string): unknown {
   value = value.trim();
@@ -76,6 +57,9 @@ export function parseYamlValue(value: string): unknown {
 /**
  * Extract YAML frontmatter from markdown content.
  * Returns { frontmatter, body } where body is the content after the closing ---.
+ *
+ * @param content - The raw markdown content.
+ * @returns Object with frontmatter map and body string.
  */
 export function extractFrontmatter(content: string): { frontmatter: Frontmatter; body: string } {
   const frontmatter: Frontmatter = {};
@@ -100,6 +84,9 @@ export function extractFrontmatter(content: string): { frontmatter: Frontmatter;
 /**
  * Extract all headings (## H2, ### H3, etc.) from markdown content.
  * Returns an array of { level, text, line } objects.
+ *
+ * @param content - The markdown content (body after frontmatter).
+ * @returns Array of heading objects.
  */
 export function extractHeadings(content: string): Heading[] {
   const headings: Heading[] = [];
@@ -125,6 +112,9 @@ export function extractHeadings(content: string): Heading[] {
 /**
  * Extract all wiki links [[target]] and [[target#anchor]] from markdown content.
  * Returns an array of { target, line, anchor? } objects.
+ *
+ * @param content - The markdown content (body after frontmatter).
+ * @returns Array of wiki link objects.
  */
 export function extractWikiLinks(content: string): WikiLink[] {
   const wikiLinks: WikiLink[] = [];

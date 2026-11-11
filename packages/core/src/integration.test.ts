@@ -648,13 +648,13 @@ This is a test note about search functionality.
 
     await writeFile(fileBPath, `# Note B
 
-This is another note about testing.
+This is another test note about searching.
 `);
 
     // Scan the folder
     await kg.scanFolder(testDir);
 
-    // Search for multi-term query
+    // Search for multi-term query — both files contain "test" and "note"
     const searchResults = kg.search('test note');
     expect(searchResults.length).toBe(2);
 

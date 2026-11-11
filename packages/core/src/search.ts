@@ -5,33 +5,7 @@
  */
 
 import { Index } from 'flexsearch';
-
-export interface SearchOptions {
-  /** Maximum number of results to return */
-  limit?: number;
-  /** Minimum match score threshold (0-1) */
-  minScore?: number;
-  /** Number of characters to include before/after match in snippet */
-  snippetPadding?: number;
-}
-
-export interface SearchHighlight {
-  /** The matched term */
-  term: string;
-  /** The surrounding text snippet with the match context */
-  snippet: string;
-  /** Line number where the match was found (1-based) */
-  line: number;
-}
-
-export interface SearchResult {
-  /** File path that matched */
-  file: string;
-  /** Relevance score (higher = more relevant) */
-  score: number;
-  /** List of matched terms with their snippets */
-  highlights: SearchHighlight[];
-}
+import type { SearchOptions, SearchHighlight, SearchResult } from './types.js';
 
 /**
  * Full-text search engine backed by flexsearch.
@@ -69,6 +43,7 @@ export class SearchEngine {
 
   /**
    * Remove a file from the search index.
+   * @param filePath - The file path to remove.
    */
   removeFile(filePath: string): void {
     this.fileContents.delete(filePath);
@@ -247,7 +222,7 @@ export class SearchEngine {
    */
   clear(): void {
     this.index = new Index({
-      tokenize: 'forward',
+      tokenize: 'strict',
     });
     this.fileContents.clear();
     this.fileTitles.clear();

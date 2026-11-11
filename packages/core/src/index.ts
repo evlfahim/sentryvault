@@ -1,17 +1,68 @@
 /**
  * @module @sentryvault/core
  * Core knowledge graph engine for SentryVault.
+ *
+ * Provides markdown parsing, backlink extraction, full-text search,
+ * graph visualization data generation, and daily notes — all without
+ * modifying source files.
+ *
+ * @example
+ * ```ts
+ * import { KnowledgeGraph, parseMarkdown } from '@sentryvault/core';
+ *
+ * const kg = new KnowledgeGraph();
+ * await kg.scanFolder('./my-vault');
+ *
+ * const results = kg.search('query');
+ * const backlinks = kg.getBacklinks('Target File');
+ * const graph = kg.getGraphData();
+ * const daily = kg.createDailyNote('2024-01-15');
+ * ```
  */
 
 import { SearchEngine } from './search.js';
-import type { ParsedFile } from './parser.js';
-import { parseMarkdown } from './parser.js';
-
-export {
+import {
+  parseMarkdown as _parseMarkdown,
+  extractFrontmatter as _extractFrontmatter,
+  extractHeadings as _extractHeadings,
+  extractWikiLinks as _extractWikiLinks,
+  parseYamlValue as _parseYamlValue,
+} from './parser.js';
+import type {
   Frontmatter,
   Heading,
   WikiLink,
   ParsedFile,
+  SearchOptions,
+  SearchHighlight,
+  SearchResult,
+  VisNode,
+  VisEdge,
+  VisGraphData,
+  GraphOptions,
+  Backlink,
+  DailyNoteOptions,
+  DailyNote,
+  GraphNode,
+  GraphEdge,
+  GraphData,
+} from './types.js';
+import {
+  generateGraphData as _generateGraphData,
+  generateSimpleGraphData as _generateSimpleGraphData,
+  getNodeColor as _getNodeColor,
+} from './graph.js';
+
+// ── Re-export parser types and functions ─────────────────────────────
+
+export type {
+  Frontmatter,
+  Heading,
+  WikiLink,
+  ParsedFile,
+};
+
+export {
   parseYamlValue,
   extractFrontmatter,
   extractHeadings,
@@ -19,63 +70,53 @@ export {
   parseMarkdown,
 } from './parser.js';
 
-export {
-  SearchEngine,
+// ── Re-export search types and classes ───────────────────────────────
+
+export type {
   SearchOptions,
   SearchHighlight,
-  SearchResult as SearchEngineResult,
-} from './search.js';
+  SearchResult,
+};
+
+export { SearchEngine } from './search.js';
+
+// ── Re-export graph types and functions ──────────────────────────────
+
+export type {
+  VisNode,
+  VisEdge,
+  VisGraphData,
+  GraphOptions,
+};
 
 export {
   generateGraphData,
   generateSimpleGraphData,
   getNodeColor,
 } from './graph.js';
-export type { VisNode, VisEdge, VisGraphData, GraphOptions } from './graph.js';
 
-export interface Backlink {
-  source: string;
-  sourceHeading?: string;
-  target: string;
-  targetHeading?: string;
-  line: number;
-}
+// ── Re-export backlink types ─────────────────────────────────────────
 
-export interface SearchResult {
-  file: string;
-  score: number;
-  matches: { text: string; snippet: string }[];
-}
+export type { Backlink } from './types.js';
 
-export interface GraphNode {
-  id: string;
-  label: string;
-  file: string;
-  type: 'file' | 'heading' | 'daily';
-}
+// ── Re-export daily note types ───────────────────────────────────────
 
-export interface GraphEdge {
-  from: string;
-  to: string;
-  label?: string;
-}
+export type { DailyNoteOptions, DailyNote } from './types.js';
 
-export interface GraphData {
-  nodes: GraphNode[];
-  edges: GraphEdge[];
-}
+// ── Internal graph types (for backward compatibility) ────────────────
 
-export interface DailyNoteOptions {
-  template?: string;
-  folder?: string;
-}
+export type { GraphNode, GraphEdge, GraphData } from './types.js';
 
-export interface DailyNote {
-  path: string;
-  content: string;
-  date: string;
-}
+// ── Main KnowledgeGraph class ────────────────────────────────────────
 
+/**
+ * Main knowledge graph engine.
+ *
+ * Scans markdown files, builds backlink indexes, provides full-text
+ * search, generates graph data for vis-network, and supports daily notes.
+ *
+ * All operations are read-only — source files are never modified.
+ */
 export class KnowledgeGraph {
   private files: Map<string, ParsedFile> = new Map();
   private backlinks: Map<string, Backlink[]> = new Map();
@@ -83,6 +124,10 @@ export class KnowledgeGraph {
 
   /**
    * Scan a folder of .md files and parse them without modifying them.
+   * Recursively scans subdirectories, skipping node_modules and hidden dirs.
+   *
+   * @param folderPath - Path to the folder to scan.
+   * @returns Array of parsed files.
    */
   async scanFolder(folderPath: string): Promise<ParsedFile[]> {
     const { readdir, readFile } = await import('fs/promises');
@@ -102,7 +147,7 @@ export class KnowledgeGraph {
         files.push(...subFiles);
       } else if (entry.isFile() && entry.name.endsWith('.md')) {
         const content = await readFile(fullPath, 'utf-8');
-        const parsed = parseMarkdown(fullPath, content);
+        const parsed = _parseMarkdown(fullPath, content);
         files.push(parsed);
         this.files.set(parsed.path, parsed);
       }
@@ -116,6 +161,8 @@ export class KnowledgeGraph {
 
   /**
    * Add a parsed file to the internal index.
+   *
+   * @param parsed - A ParsedFile object from parseMarkdown().
    */
   addFile(parsed: ParsedFile): void {
     this.files.set(parsed.path, parsed);
@@ -159,6 +206,9 @@ export class KnowledgeGraph {
 
   /**
    * Get backlinks for a given target (file name or wiki link target).
+   *
+   * @param target - The target file name or wiki link target.
+   * @returns Array of backlink objects.
    */
   getBacklinks(target: string): Backlink[] {
     return this.backlinks.get(target) || [];
@@ -182,6 +232,10 @@ export class KnowledgeGraph {
   /**
    * Search content with case-insensitive matching using flexsearch.
    * Returns results with highlights and snippets.
+   *
+   * @param query - Search query string.
+   * @param options - Optional search parameters.
+   * @returns Array of search results sorted by relevance.
    */
   search(query: string, options?: { limit?: number }): SearchResult[] {
     const results = this.searchEngine.search(query, {
@@ -200,6 +254,8 @@ export class KnowledgeGraph {
 
   /**
    * Convert parsed nodes and edges into vis-network compatible format.
+   *
+   * @returns Graph data with nodes and edges for vis-network.
    */
   getGraphData(): GraphData {
     const nodes: GraphNode[] = [];
@@ -252,6 +308,12 @@ export class KnowledgeGraph {
 
   /**
    * Create or read a daily note for a given date.
+   * If the file already exists in the index, returns its content.
+   * Otherwise, generates content from the template or a default.
+   *
+   * @param date - Date string in YYYY-MM-DD format.
+   * @param options - Template and folder options.
+   * @returns DailyNote object with path, content, and date.
    */
   createDailyNote(date: string, options: DailyNoteOptions = {}): DailyNote {
     const folder = options.folder || 'daily-notes';

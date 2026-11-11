@@ -4,80 +4,10 @@
  * vis-network compatible format with styling and filtering support.
  */
 
-import type { ParsedFile } from './parser.js';
-
-// vis-network compatible node representation
-export interface VisNode {
-  id: string;
-  label: string;
-  file?: string;
-  type?: 'file' | 'heading' | 'daily';
-  shape?: string;
-  color?: {
-    background?: string;
-    border?: string;
-    highlight?: {
-      background?: string;
-      border?: string;
-    };
-    hover?: {
-      background?: string;
-      border?: string;
-    };
-  };
-  size?: number;
-  font?: {
-    size?: number;
-    face?: string;
-    color?: string;
-  };
-  title?: string;
-}
-
-// vis-network compatible edge representation
-export interface VisEdge {
-  from: string;
-  to: string;
-  label?: string;
-  arrows?: {
-    to?: boolean;
-    from?: boolean;
-  };
-  smooth?: {
-    type?: string;
-  };
-  color?: {
-    color?: string;
-    highlight?: string;
-    hover?: string;
-  };
-  title?: string;
-}
-
-// vis-network compatible graph data
-export interface VisGraphData {
-  nodes: VisNode[];
-  edges: VisEdge[];
-}
-
-// Options for graph generation
-export interface GraphOptions {
-  /** Maximum number of nodes to include (0 = unlimited) */
-  maxNodes?: number;
-  /** Filter by node type: 'file', 'heading', 'daily', or undefined for all */
-  nodeType?: 'file' | 'heading' | 'daily';
-  /** Highlight specific node IDs */
-  highlightIds?: string[];
-  /** Whether to include heading nodes (default: true) */
-  includeHeadings?: boolean;
-  /** Whether to include wiki link target nodes that don't have a file (default: true) */
-  includeUnlinkedTargets?: boolean;
-  /** Custom label resolver for nodes */
-  labelResolver?: (nodeId: string, parsedFile?: ParsedFile) => string;
-}
+import type { ParsedFile, VisNode, VisEdge, VisGraphData, GraphOptions } from './types.js';
 
 // Default colors for node types
-const NODE_COLORS = {
+const NODE_COLORS: Record<string, { background: string; border: string; highlight: { background: string; border: string }; hover: { background: string; border: string } }> = {
   file: {
     background: '#4a90d9',
     border: '#2c6fad',
@@ -98,7 +28,7 @@ const NODE_COLORS = {
   },
 };
 
-const EDGE_COLORS = {
+const EDGE_COLORS: Record<string, { color: string; highlight: string; hover: string }> = {
   wikiLink: {
     color: '#999',
     highlight: '#4a90d9',
