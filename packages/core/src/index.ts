@@ -26,6 +26,13 @@ export {
   SearchResult as SearchEngineResult,
 } from './search.js';
 
+export {
+  generateGraphData,
+  generateSimpleGraphData,
+  getNodeColor,
+} from './graph.js';
+export type { VisNode, VisEdge, VisGraphData, GraphOptions } from './graph.js';
+
 export interface Backlink {
   source: string;
   sourceHeading?: string;

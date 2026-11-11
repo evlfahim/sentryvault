@@ -284,10 +284,11 @@ export function generateGraphData(
 
         addNode(resolvedPath, targetLabel, 'file', targetFile);
 
-        // Determine the target node id (with anchor if specified)
-        const targetNodeId = link.anchor
-          ? `${resolvedPath}#${link.anchor}`
-          : resolvedPath;
+        // Determine the target node id (with anchor if specified).
+        // Fall back to the file node when the anchored heading node is absent.
+        const anchorId = link.anchor ? `${resolvedPath}#${link.anchor}` : undefined;
+        const targetNodeId =
+          anchorId && nodeIds.has(anchorId) ? anchorId : resolvedPath;
 
         // Add wiki link edge
         addEdge({
@@ -322,7 +323,11 @@ export function generateGraphData(
     }
   }
 
-  return { nodes, edges };
+  // Drop edges whose endpoints were filtered out (nodeType / maxNodes),
+  // so vis-network never receives dangling edges.
+  const connectedEdges = edges.filter(e => nodeIds.has(e.from) && nodeIds.has(e.to));
+
+  return { nodes, edges: connectedEdges };
 }
 
 /**
