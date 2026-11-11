@@ -1,0 +1,21 @@
+{
+  "name": "@sentryvault/cli",
+  "version": "0.1.0",
+  "description": "CLI wrapper for SentryVault",
+  "type": "module",
+  "bin": {
+    "sentryvault": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@sentryvault/core": "0.1.0",
+    "flexsearch": "^0.7.43",
+    "vis-network": "^9.1.6"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0",
+    "typescript": "^5.3.0"
+  }
+}
