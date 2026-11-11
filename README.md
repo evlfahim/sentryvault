@@ -132,14 +132,62 @@ const daily = kg.createDailyNote('2024-01-15');
 
 ## Becoming an Obsidian Plugin
 
-The core exports a `KnowledgeGraph` class with a clean public API. To wrap as an Obsidian plugin:
+The core exports a `KnowledgeGraph` class with a clean public API and a `PluginBridge` interface that abstracts host-specific APIs (file system, editor, UI, events). To wrap as an Obsidian plugin:
 
 1. Import `@sentryvault/core` in your plugin code
-2. Replace the web UI with Obsidian's `ItemView` and `SettingTab`
-3. Bridge core methods to Obsidian's file system (`app.vault`) and editor APIs
-4. Use Obsidian's graph view or embed the vis-network canvas in a modal
+2. Implement the `PluginBridge` interface, wrapping Obsidian's `app.vault`, `app.workspace`, and `app.ui` APIs
+3. Call `createBridge(bridge)` to get a `KnowledgeGraph` instance bound to your bridge
+4. Register custom `ItemView` classes for Search, Graph, and Daily Notes panels
+5. Add a `SettingTab` for plugin configuration
 
-See `SENTRY-PLAN.md` for the detailed migration guide.
+See the full migration guide: [`guides/obsidian-plugin-migration.md`](guides/obsidian-plugin-migration.md)
+
+### Bridge Interface
+
+The `PluginBridge` interface (from `@sentryvault/core/plugin-bridge`) defines five subsystems:
+
+| Subsystem | Interface | Purpose |
+|-----------|-----------|---------|
+| File System | `FileSystemBridge` | Read/write/list files, stat, exists |
+| Vault | `VaultBridge` | CRUD operations on vault files |
+| Editor | `EditorBridge` | Open files, read/write editor content |
+| UI | `UIBridge` | Show notices, modals, register views |
+| Events | `EventBridge` | Emit and listen to custom events |
+
+The bridge factory function `createBridge(bridge)` returns a `KnowledgeGraph` instance with overridden `scanFolder()` and `createDailyNote()` methods that use the bridge's file system instead of Node.js `fs`.
+
+### Quick Start for Plugin Authors
+
+```typescript
+import { App, Plugin } from 'obsidian';
+import { createBridge, type PluginBridge } from '@sentryvault/core';
+
+class MyObsidianPlugin extends Plugin {
+  async onload() {
+    // 1. Create the bridge
+    const bridge: PluginBridge = {
+      fs: { /* implement using app.vault */ },
+      vault: { /* implement using app.vault */ },
+      editor: { /* implement using app.workspace */ },
+      ui: { /* implement using app.ui */ },
+      events: { /* implement using app.workspace */ },
+      vaultRoot: this.app.vault.basePath,
+      createGraph: () => createBridge(bridge),
+    };
+
+    // 2. Create a bound graph
+    const kg = bridge.createGraph();
+    await kg.scanFolder(this.app.vault.basePath);
+
+    // 3. Use core methods
+    const results = kg.search('query');
+    const backlinks = kg.getBacklinks('Target');
+    const graph = kg.getGraphData();
+  }
+}
+```
+
+See the full migration guide: [`guides/obsidian-plugin-migration.md`](guides/obsidian-plugin-migration.md)
 
 ## License
 

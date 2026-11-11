@@ -103,6 +103,22 @@ export type { Backlink } from './types.js';
 
 export type { DailyNoteOptions, DailyNote } from './types.js';
 
+// ── Re-export plugin bridge types and functions ───────────────────────
+
+export type {
+  FileSystemBridge,
+  VaultBridge,
+  EditorBridge,
+  EditorHandle,
+  UIBridge,
+  ViewClass,
+  SettingsTabClass,
+  EventBridge,
+  PluginBridge,
+} from './plugin-bridge.js';
+
+export { createBridge, createMinimalBridge } from './plugin-bridge.js';
+
 // ── Internal graph types (for backward compatibility) ────────────────
 
 export type { GraphNode, GraphEdge, GraphData } from './types.js';
