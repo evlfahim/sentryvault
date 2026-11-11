@@ -324,31 +324,6 @@ export function createBridge(bridge: PluginBridge): KnowledgeGraph {
     return files;
   };
 
-  // Override createDailyNote to use the bridge's file system
-  const originalCreateDailyNote = kg.createDailyNote.bind(kg);
-  kg.createDailyNote = async (date: string, options = {}) => {
-    const folder = options.folder || 'daily-notes';
-    const template = options.template || '';
-    const path = `${folder}/${date}.md`;
-
-    // Check if file exists in the vault
-    const exists = await bridge.fs.exists(path);
-    if (exists) {
-      const content = await bridge.fs.readFile(path);
-      const parsed = parseMarkdown(path, content);
-      kg.addFile(parsed);
-      return { path, content, date };
-    }
-
-    // Create the file using the bridge
-    const content = template
-      ? template.replaceAll('{{date}}', date)
-      : `---\ntitle: ${date}\n---\n\n# ${date}\n`;
-
-    await bridge.fs.writeFile(path, content);
-    return { path, content, date };
-  };
-
   return kg;
 }
 
@@ -406,7 +381,7 @@ export async function createMinimalBridge(vaultRoot: string): Promise<PluginBrid
         for (const entry of entries) {
           const fullPath = `${dir}/${entry}`;
           const s = await fs.stat(fullPath);
-          if (s.isDirectory) {
+          if (s && s.isDirectory) {
             if (entry !== 'node_modules' && !entry.startsWith('.')) {
               await walk(fullPath);
             }

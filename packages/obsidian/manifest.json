@@ -1,0 +1,9 @@
+{
+  "id": "sentryvault",
+  "name": "SentryVault",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "Offline-first markdown knowledge base with backlinks, full-text search, graph view, and daily notes.",
+  "author": "SentryVault",
+  "isDesktopOnly": false
+}
