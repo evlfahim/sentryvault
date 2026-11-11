@@ -92,6 +92,232 @@ Back to [[Note A]].
     expect(backlinks).toEqual([]);
   });
 
+  describe('backlink index builder with headings', () => {
+    it('should track source heading for wiki links under a heading', () => {
+      const graph = new KnowledgeGraph();
+      const content = `# Main
+
+## Section A
+
+See [[Target File]].
+
+## Section B
+
+Also [[Target File]].
+`;
+      const parsed = parseMarkdown('source.md', content);
+      graph.addFile(parsed);
+      graph.buildBacklinkIndex();
+
+      const backlinks = graph.getBacklinks('Target File');
+      expect(backlinks).toHaveLength(2);
+      expect(backlinks[0].source).toBe('source.md');
+      expect(backlinks[0].sourceHeading).toBe('Section A');
+      expect(backlinks[1].source).toBe('source.md');
+      expect(backlinks[1].sourceHeading).toBe('Section B');
+    });
+
+    it('should leave sourceHeading undefined for links before any heading', () => {
+      const graph = new KnowledgeGraph();
+      const content = `[[Target File]]
+
+# Heading
+
+Some text.
+`;
+      const parsed = parseMarkdown('preamble.md', content);
+      graph.addFile(parsed);
+      graph.buildBacklinkIndex();
+
+      const backlinks = graph.getBacklinks('Target File');
+      expect(backlinks).toHaveLength(1);
+      expect(backlinks[0].source).toBe('preamble.md');
+      expect(backlinks[0].sourceHeading).toBeUndefined();
+    });
+
+    it('should track backlinks from multiple files to the same target', () => {
+      const graph = new KnowledgeGraph();
+      const contentA = `# File A
+
+## Intro
+
+[[Shared Target]].
+`;
+      const contentB = `# File B
+
+## Overview
+
+[[Shared Target]].
+`;
+      graph.addFile(parseMarkdown('File A.md', contentA));
+      graph.addFile(parseMarkdown('File B.md', contentB));
+      graph.buildBacklinkIndex();
+
+      const backlinks = graph.getBacklinks('Shared Target');
+      expect(backlinks).toHaveLength(2);
+      const sources = backlinks.map(b => b.source).sort();
+      expect(sources).toEqual(['File A.md', 'File B.md']);
+      expect(backlinks.find(b => b.source === 'File A.md')!.sourceHeading).toBe('Intro');
+      expect(backlinks.find(b => b.source === 'File B.md')!.sourceHeading).toBe('Overview');
+    });
+
+    it('should track backlinks with target anchors', () => {
+      const graph = new KnowledgeGraph();
+      const content = `# Source
+
+## Details
+
+[[Target#specific-section]].
+`;
+      graph.addFile(parseMarkdown('Source.md', content));
+      graph.buildBacklinkIndex();
+
+      const backlinks = graph.getBacklinks('Target');
+      expect(backlinks).toHaveLength(1);
+      expect(backlinks[0].source).toBe('Source.md');
+      expect(backlinks[0].sourceHeading).toBe('Details');
+      expect(backlinks[0].targetHeading).toBe('specific-section');
+    });
+
+    it('should rebuild backlink index when new files are added', () => {
+      const graph = new KnowledgeGraph();
+      const contentA = `# A
+
+[[B]].
+`;
+      graph.addFile(parseMarkdown('A.md', contentA));
+      graph.buildBacklinkIndex();
+
+      // After adding A and building index, B has a backlink from A
+      expect(graph.getBacklinks('B')).toHaveLength(1);
+      expect(graph.getBacklinks('B')[0].source).toBe('A.md');
+
+      // Add B
+      const contentB = `# B
+
+[[A]].
+`;
+      graph.addFile(parseMarkdown('B.md', contentB));
+      graph.buildBacklinkIndex();
+
+      // Now B should have a backlink from A
+      const backlinksB = graph.getBacklinks('B');
+      expect(backlinksB).toHaveLength(1);
+      expect(backlinksB[0].source).toBe('A.md');
+
+      // And A should have a backlink from B
+      const backlinksA = graph.getBacklinks('A');
+      expect(backlinksA).toHaveLength(1);
+      expect(backlinksA[0].source).toBe('B.md');
+    });
+
+    it('should handle wiki links with no source file headings', () => {
+      const graph = new KnowledgeGraph();
+      const content = `# Just a heading
+
+Some text without wiki links.
+
+## Another heading
+`;
+      graph.addFile(parseMarkdown('no-links.md', content));
+      graph.buildBacklinkIndex();
+
+      // No wiki links means no backlinks for anything
+      expect(graph.getBacklinks('anything')).toHaveLength(0);
+    });
+
+    it('should handle empty file gracefully', () => {
+      const graph = new KnowledgeGraph();
+      graph.addFile(parseMarkdown('empty.md', ''));
+      graph.buildBacklinkIndex();
+
+      expect(graph.getBacklinks('anything')).toHaveLength(0);
+    });
+
+    it('should handle file with only frontmatter and no headings', () => {
+      const graph = new KnowledgeGraph();
+      const content = `---
+title: No Headings
+---
+
+[[Target]].
+`;
+      graph.addFile(parseMarkdown('fm-only.md', content));
+      graph.buildBacklinkIndex();
+
+      const backlinks = graph.getBacklinks('Target');
+      expect(backlinks).toHaveLength(1);
+      expect(backlinks[0].source).toBe('fm-only.md');
+      expect(backlinks[0].sourceHeading).toBeUndefined();
+    });
+
+    it('should handle multiple wiki links to different targets in same heading', () => {
+      const graph = new KnowledgeGraph();
+      const content = `# Source
+
+## Links
+
+[[Target A]] and [[Target B]].
+`;
+      graph.addFile(parseMarkdown('multi-target.md', content));
+      graph.buildBacklinkIndex();
+
+      const backlinksA = graph.getBacklinks('Target A');
+      expect(backlinksA).toHaveLength(1);
+      expect(backlinksA[0].sourceHeading).toBe('Links');
+
+      const backlinksB = graph.getBacklinks('Target B');
+      expect(backlinksB).toHaveLength(1);
+      expect(backlinksB[0].sourceHeading).toBe('Links');
+    });
+
+    it('should handle deeply nested headings', () => {
+      const graph = new KnowledgeGraph();
+      const content = `# H1
+
+## H2
+
+### H3
+
+#### H4
+
+[[Deep Target]].
+`;
+      graph.addFile(parseMarkdown('deep.md', content));
+      graph.buildBacklinkIndex();
+
+      const backlinks = graph.getBacklinks('Deep Target');
+      expect(backlinks).toHaveLength(1);
+      expect(backlinks[0].sourceHeading).toBe('H4');
+    });
+
+    it('should handle wiki links spanning multiple headings correctly', () => {
+      const graph = new KnowledgeGraph();
+      const content = `# Root
+
+## First
+
+[[Target]].
+
+## Second
+
+[[Target]].
+
+## Third
+
+[[Target]].
+`;
+      graph.addFile(parseMarkdown('multi-heading.md', content));
+      graph.buildBacklinkIndex();
+
+      const backlinks = graph.getBacklinks('Target');
+      expect(backlinks).toHaveLength(3);
+      expect(backlinks[0].sourceHeading).toBe('First');
+      expect(backlinks[1].sourceHeading).toBe('Second');
+      expect(backlinks[2].sourceHeading).toBe('Third');
+    });
+  });
+
   it('should search content', () => {
     const graph = new KnowledgeGraph();
     const content = `# Test Note

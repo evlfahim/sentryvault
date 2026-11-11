@@ -105,19 +105,32 @@ export class KnowledgeGraph {
 
   /**
    * Build an index mapping targets to source files that link to them.
+   * Tracks which heading (if any) each wiki link appears under.
    */
   buildBacklinkIndex(): void {
     this.backlinks.clear();
 
     for (const [path, file] of this.files) {
       for (const link of file.wikiLinks) {
+        // Determine the heading under which this wiki link appears.
+        // Walk through headings and find the last one whose line is before
+        // the wiki link's line. If no heading exists before the link,
+        // the link is in the preamble (before any heading).
+        let sourceHeading: string | undefined;
+        for (let i = file.headings.length - 1; i >= 0; i--) {
+          if (file.headings[i].line < link.line) {
+            sourceHeading = file.headings[i].text;
+            break;
+          }
+        }
+
         const targetKey = link.target;
         if (!this.backlinks.has(targetKey)) {
           this.backlinks.set(targetKey, []);
         }
         this.backlinks.get(targetKey)!.push({
           source: path,
-          sourceHeading: undefined,
+          sourceHeading,
           target: targetKey,
           targetHeading: link.anchor,
           line: link.line,
